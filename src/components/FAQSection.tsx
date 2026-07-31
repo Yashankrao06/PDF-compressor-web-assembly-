@@ -8,24 +8,29 @@ interface FAQItem {
 
 const faqs: FAQItem[] = [
   {
-    question: 'How does client-side PDF compression work?',
+    question: 'How does client-side multi-format compression work?',
     answer:
-      'PDFCompress Pure processes your files entirely inside your web browser using HTML5 Canvas and JavaScript/WebAssembly PDF libraries. It identifies embedded high-resolution images, re-samples them to optimal target resolutions, strips redundant metadata streams, and re-compresses object tables locally on your computer.',
+      'FileShrink AI processes your files entirely inside your web browser using HTML5 Canvas, PDF rendering streams, and ZIP document decoders. It downsamples high-resolution embedded images, optimizes document object streams, and re-encodes pixel streams locally on your computer.',
+  },
+  {
+    question: 'What file formats can I compress?',
+    answer:
+      'FileShrink AI supports PDF documents, image files (JPG, JPEG, PNG, WebP), and Word documents (.docx). You can drop single files or mix different file types together in a simultaneous batch queue.',
   },
   {
     question: 'Are my confidential documents safe?',
     answer:
-      '100% yes. Unlike traditional online PDF tools that require uploading your sensitive files to cloud servers, this tool executes all processing on your local CPU. Your file never crosses the internet or touches a remote disk.',
+      '100% yes. Unlike traditional online converters that require uploading your sensitive files to cloud servers, FileShrink AI executes all processing on your local device CPU. Your files never cross the internet or touch a remote disk.',
   },
   {
-    question: 'Will compression degrade my PDF text quality?',
+    question: 'Will compression degrade text or formatting?',
     answer:
-      'No! Vector text, fonts, geometric lines, and form fields remain crisp and sharp. Compression focuses on down-sampling high-DPI embedded photographs and raster images, as well as clearing unnecessary object streams.',
+      'No! Vector text, fonts, geometric lines, and Word document text structures remain sharp. Compression intelligently targets embedded high-DPI raster images and unnecessary metadata streams.',
   },
   {
     question: 'Is there any file size limit or fee?',
     answer:
-      'No limits and 100% free forever. Since the heavy compute lifting happens on your device rather than paid cloud servers, you can compress files of any size without restrictions or subscriptions.',
+      'No limits and 100% free forever. Since computation happens directly in your browser rather than on paid cloud servers, you can compress files of any size without restrictions or subscriptions.',
   },
 ];
 

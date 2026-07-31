@@ -1,7 +1,7 @@
 import React from 'react';
 import { Download, CheckCircle2, ArrowRight, RefreshCw, FileText, Sparkles, ShieldCheck, Clock, Layers } from 'lucide-react';
 import { CompressionResult } from '../types';
-import { formatBytes } from '../utils/pdfCompressor';
+import { formatBytes } from '../utils/fileCompressor';
 
 interface ResultsViewProps {
   result: CompressionResult;
@@ -37,7 +37,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({ result, onCompressAnot
             <CheckCircle2 className="w-8 h-8 stroke-[2]" />
           </div>
           <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-stone-900">
-            PDF Compressed Successfully
+            File Compressed Successfully
           </h2>
           <p className="text-xs font-mono font-bold text-stone-500 max-w-md mx-auto truncate px-2">
             {result.fileName}
@@ -45,32 +45,32 @@ export const ResultsView: React.FC<ResultsViewProps> = ({ result, onCompressAnot
         </div>
 
         {/* Metrics Grid */}
-        <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
           {/* Original Size */}
-          <div className="bg-stone-50 border border-stone-200 rounded-xl p-4 text-center">
+          <div className="bg-stone-50 border border-stone-200 rounded-xl p-3.5 sm:p-4 text-center">
             <span className="text-xs uppercase font-extrabold tracking-wider text-stone-500">Original Size</span>
             <div className="text-xl sm:text-2xl font-mono font-bold text-stone-400 mt-1 line-through">
               {formatBytes(result.originalSize)}
             </div>
-            <span className="text-[11px] text-stone-500 mt-1 block">Before compression pass</span>
+            <span className="text-[11px] text-stone-500 mt-0.5 block">Before compression pass</span>
           </div>
 
           {/* Compressed Size */}
-          <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-center">
+          <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3.5 sm:p-4 text-center">
             <span className="text-xs uppercase font-extrabold tracking-wider text-emerald-800">Compressed Size</span>
             <div className="text-2xl sm:text-3xl font-mono font-extrabold text-emerald-700 mt-1">
               {formatBytes(result.compressedSize)}
             </div>
-            <span className="text-[11px] text-emerald-800 mt-1 block font-bold">New file size</span>
+            <span className="text-[11px] text-emerald-800 mt-0.5 block font-bold">New file size</span>
           </div>
 
           {/* Space Saved Percentage */}
-          <div className="bg-stone-900 text-white border border-stone-800 rounded-xl p-4 text-center shadow-md">
+          <div className="bg-stone-900 text-white border border-stone-800 rounded-xl p-3.5 sm:p-4 text-center shadow-md">
             <span className="text-xs uppercase font-extrabold tracking-wider text-emerald-400">Space Saved</span>
             <div className="text-2xl sm:text-3xl font-mono font-black text-white mt-1 flex items-center justify-center gap-1">
               <span>{isSavedPositive ? `-${result.savedPercentage}%` : 'Optimal'}</span>
             </div>
-            <span className="text-[11px] text-stone-400 mt-1 block font-semibold">
+            <span className="text-[11px] text-stone-400 mt-0.5 block font-semibold">
               Saved {formatBytes(result.savedBytes)}
             </span>
           </div>
@@ -134,7 +134,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({ result, onCompressAnot
             className="w-full py-4 px-8 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm uppercase tracking-wider transition-all shadow-md active:scale-[0.99] flex items-center justify-center gap-2"
           >
             <Download className="w-5 h-5 stroke-[2]" />
-            <span>Download Compressed PDF</span>
+            <span>Download Compressed File</span>
           </button>
 
           <button

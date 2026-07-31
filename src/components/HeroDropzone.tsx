@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { UploadCloud, FileCheck2, Shield, AlertCircle, FileText } from 'lucide-react';
+import { UploadCloud, FileCheck2, Shield, AlertCircle, FileText, Image as ImageIcon, FileSpreadsheet } from 'lucide-react';
+import { detectFileType } from '../utils/fileCompressor';
 
 interface HeroDropzoneProps {
   onFileSelect: (files: File[]) => void;
@@ -23,22 +24,23 @@ export const HeroDropzone: React.FC<HeroDropzoneProps> = ({ onFileSelect }) => {
   };
 
   const validateAndPassFiles = (fileList: FileList | File[]) => {
-    const validPdfFiles: File[] = [];
+    const validFiles: File[] = [];
     setErrorMsg(null);
 
     const filesArray = Array.from(fileList);
     for (const file of filesArray) {
-      if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
-        validPdfFiles.push(file);
+      const type = detectFileType(file);
+      if (type !== 'unknown') {
+        validFiles.push(file);
       }
     }
 
-    if (validPdfFiles.length === 0) {
-      setErrorMsg('Please select a valid PDF file (.pdf format).');
+    if (validFiles.length === 0) {
+      setErrorMsg('Please select valid files (.pdf, .jpg, .png, .webp, or .docx format).');
       return;
     }
 
-    onFileSelect(validPdfFiles);
+    onFileSelect(validFiles);
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -65,7 +67,7 @@ export const HeroDropzone: React.FC<HeroDropzoneProps> = ({ onFileSelect }) => {
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         onClick={() => fileInputRef.current?.click()}
-        className={`relative group cursor-pointer overflow-hidden rounded-xl border-2 border-dashed p-8 sm:p-12 text-center transition-all duration-200 bg-white ${
+        className={`relative group cursor-pointer overflow-hidden rounded-2xl border-2 border-dashed p-5 sm:p-12 text-center transition-all duration-200 bg-white ${
           isDragOver
             ? 'border-emerald-500 bg-emerald-50/50 ring-4 ring-emerald-500/10 scale-[1.01]'
             : 'border-stone-200 hover:border-emerald-500 hover:shadow-md'
@@ -75,45 +77,58 @@ export const HeroDropzone: React.FC<HeroDropzoneProps> = ({ onFileSelect }) => {
           type="file"
           ref={fileInputRef}
           onChange={handleInputChange}
-          accept="application/pdf"
+          accept="application/pdf,image/jpeg,image/png,image/webp,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.pdf,.jpg,.jpeg,.png,.webp,.docx"
           multiple
           className="hidden"
         />
 
-        <div className="relative z-10 flex flex-col items-center justify-center space-y-5">
+        <div className="relative z-10 flex flex-col items-center justify-center space-y-4 sm:space-y-5">
           {/* Upload Icon Circle */}
           <div
-            className={`w-20 h-20 rounded-full flex items-center justify-center transition-all duration-200 ${
+            className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center transition-all duration-200 ${
               isDragOver
                 ? 'bg-emerald-600 text-white scale-110 shadow-md'
                 : 'bg-stone-50 text-stone-400 group-hover:bg-emerald-600 group-hover:text-white'
             }`}
           >
-            <UploadCloud className="w-10 h-10 stroke-[1.75]" />
+            <UploadCloud className="w-8 h-8 sm:w-10 sm:h-10 stroke-[1.75]" />
           </div>
 
           {/* Heading */}
           <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-stone-900 tracking-tight">
-              Ready for High-Compression
+            <h2 className="text-lg sm:text-2xl font-bold text-stone-900 tracking-tight">
+              Ready for High Batch Compression
             </h2>
-            <p className="text-sm text-stone-500 mt-1 max-w-xs mx-auto">
-              Drag your PDF here or select a file to compress it instantly in browser.
+            <p className="text-xs sm:text-sm text-stone-500 mt-1 max-w-md mx-auto">
+              Drag one or multiple files here (PDF, JPG, PNG, WEBP, or DOCX) to shrink them instantly.
             </p>
           </div>
 
+          {/* Format Badges */}
+          <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2 pt-1">
+            <span className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-bold px-2.5 py-1 rounded-md bg-stone-100 text-stone-700 border border-stone-200">
+              <FileText className="w-3.5 h-3.5 text-emerald-600" /> PDF Documents
+            </span>
+            <span className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-bold px-2.5 py-1 rounded-md bg-stone-100 text-stone-700 border border-stone-200">
+              <ImageIcon className="w-3.5 h-3.5 text-blue-600" /> Images (JPG/PNG/WebP)
+            </span>
+            <span className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-bold px-2.5 py-1 rounded-md bg-stone-100 text-stone-700 border border-stone-200">
+              <FileSpreadsheet className="w-3.5 h-3.5 text-indigo-700" /> Word (.DOCX)
+            </span>
+          </div>
+
           {/* Action CTA */}
-          <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
+          <div className="pt-1 sm:pt-2 w-full flex items-center justify-center">
             <button
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 fileInputRef.current?.click();
               }}
-              className="px-6 py-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm uppercase tracking-wider transition-all shadow-sm active:scale-95 flex items-center gap-2"
+              className="w-full sm:w-auto min-h-[48px] px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm uppercase tracking-wider transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
             >
               <FileText className="w-4 h-4 stroke-[2]" />
-              <span>Browse Local PDF Files</span>
+              <span>Select Files to Compress</span>
             </button>
           </div>
 
@@ -126,14 +141,14 @@ export const HeroDropzone: React.FC<HeroDropzoneProps> = ({ onFileSelect }) => {
           )}
 
           {/* Privacy Guarantee Footer inside dropzone */}
-          <div className="pt-4 border-t border-stone-100 w-full max-w-lg mx-auto flex items-center justify-center gap-6 text-xs text-stone-500 font-medium">
+          <div className="pt-3 sm:pt-4 border-t border-stone-100 w-full max-w-lg mx-auto flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs text-stone-500 font-medium">
             <div className="flex items-center gap-1.5">
               <Shield className="w-3.5 h-3.5 text-emerald-600" />
               <span>100% Private (No uploads)</span>
             </div>
             <div className="flex items-center gap-1.5">
               <FileCheck2 className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Free & Unlimited</span>
+              <span>Batch Queue Supported</span>
             </div>
           </div>
         </div>

@@ -1,120 +1,145 @@
 import React, { useState } from 'react';
 import { Navbar } from './components/Navbar';
 import { HeroDropzone } from './components/HeroDropzone';
-import { CompressionControls } from './components/CompressionControls';
-import { ProcessingView } from './components/ProcessingView';
-import { ResultsView } from './components/ResultsView';
+import { BatchQueueView } from './components/BatchQueueView';
 import { PrivacyBanner } from './components/PrivacyBanner';
 import { FAQSection } from './components/FAQSection';
-import { CompressionOptions, CompressionResult, ProgressState } from './types';
-import { compressPDF, formatBytes, getPDFPageCount } from './utils/pdfCompressor';
+import { WelcomeModal } from './components/WelcomeModal';
+import { BatchFileItem, CompressionOptions, ProgressState } from './types';
+import { compressFile, detectFileType } from './utils/fileCompressor';
 import { AlertTriangle } from 'lucide-react';
 
 export default function App() {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [pageCount, setPageCount] = useState<number | undefined>(undefined);
+  const [showWelcomeModal, setShowWelcomeModal] = useState<boolean>(true);
+  const [queue, setQueue] = useState<BatchFileItem[]>([]);
+  const [isProcessingBatch, setIsProcessingBatch] = useState<boolean>(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
   const [options, setOptions] = useState<CompressionOptions>({
     preset: 'extreme',
-    quality: 0.18,
-    maxDimension: 750,
-    dpiScale: 0.6,
+    quality: 0.15,
+    maxDimension: 650,
+    dpiScale: 0.5,
     grayscale: false,
     removeMetadata: true,
     removeAnnotations: true,
     strategy: 'auto',
   });
 
-  const [isProcessing, setIsProcessing] = useState<boolean>(false);
-  const [progress, setProgress] = useState<ProgressState | undefined>(undefined);
-  const [result, setResult] = useState<CompressionResult | null>(null);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-
-  // Handle file selection
-  const handleFileSelect = async (files: File[]) => {
+  // Handle files selected from Hero Dropzone or file picker
+  const handleFileSelect = (files: File[]) => {
     if (files.length === 0) return;
-    const file = files[0]; // Primary focus on single/MVP file path
-    setSelectedFile(file);
-    setResult(null);
-    setErrorMsg(null);
 
-    // Fast page count estimate
-    try {
-      const pages = await getPDFPageCount(file);
-      setPageCount(pages);
-    } catch {
-      setPageCount(1);
-    }
+    const newItems: BatchFileItem[] = files.map((file) => ({
+      id: Math.random().toString(36).substring(2, 9),
+      file,
+      name: file.name,
+      fileType: detectFileType(file),
+      originalSize: file.size,
+      status: 'idle',
+    }));
+
+    setQueue((prev) => [...prev, ...newItems]);
+    setErrorMsg(null);
   };
 
-  // Execute Compression
-  const handleStartCompress = async () => {
-    if (!selectedFile) return;
-
-    setIsProcessing(true);
-    setResult(null);
-    setErrorMsg(null);
-
-    try {
-      const compResult = await compressPDF(selectedFile, options, (p) => {
-        setProgress(p);
-      });
-
-      setResult(compResult);
-    } catch (err: any) {
-      console.error('Compression error:', err);
-      setErrorMsg(err.message || 'An unexpected error occurred during compression.');
-    } finally {
-      setIsProcessing(false);
-      setProgress(undefined);
-    }
+  const handleAddMoreFiles = (files: File[]) => {
+    handleFileSelect(files);
   };
 
-  // Reset to initial drop state
+  const handleRemoveFile = (id: string) => {
+    setQueue((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  // Run Batch Compression sequentially across queue
+  const handleStartBatchCompress = async () => {
+    if (queue.length === 0 || isProcessingBatch) return;
+
+    setIsProcessingBatch(true);
+    setErrorMsg(null);
+
+    // Filter items that need processing
+    const itemsToProcess = queue.filter((item) => item.status !== 'done');
+
+    for (const item of itemsToProcess) {
+      // Set current file status to processing
+      setQueue((prev) =>
+        prev.map((i) =>
+          i.id === item.id ? { ...i, status: 'processing', errorMessage: undefined } : i
+        )
+      );
+
+      try {
+        const result = await compressFile(item.file, options, (progress: ProgressState) => {
+          setQueue((prev) =>
+            prev.map((i) => (i.id === item.id ? { ...i, progress } : i))
+          );
+        });
+
+        setQueue((prev) =>
+          prev.map((i) => (i.id === item.id ? { ...i, status: 'done', result } : i))
+        );
+      } catch (err: any) {
+        console.error('Batch file error:', item.name, err);
+        setQueue((prev) =>
+          prev.map((i) =>
+            i.id === item.id
+              ? { ...i, status: 'error', errorMessage: err?.message || 'Compression failed' }
+              : i
+          )
+        );
+      }
+    }
+
+    setIsProcessingBatch(false);
+  };
+
   const handleReset = () => {
-    setSelectedFile(null);
-    setResult(null);
-    setIsProcessing(false);
-    setProgress(undefined);
+    setQueue([]);
+    setIsProcessingBatch(false);
     setErrorMsg(null);
-    setPageCount(undefined);
   };
 
   return (
     <div className="min-h-screen bg-[#FAF9F6] text-[#1C1917] flex flex-col font-sans antialiased selection:bg-emerald-600 selection:text-white">
+      {/* Welcome Popup Modal */}
+      <WelcomeModal
+        isOpen={showWelcomeModal}
+        onClose={() => setShowWelcomeModal(false)}
+      />
+
       {/* Sticky Header */}
-      <Navbar onReset={handleReset} />
+      <Navbar onReset={handleReset} onOpenInfo={() => setShowWelcomeModal(true)} />
 
       {/* Main Container */}
-      <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-8 py-8 sm:py-12 space-y-8">
+      <main className="flex-1 max-w-5xl w-full mx-auto px-3 sm:px-8 py-5 sm:py-12 space-y-6 sm:space-y-8">
         {/* Error Alert */}
         {errorMsg && (
-          <div className="max-w-3xl mx-auto bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center justify-between gap-3 text-amber-900 text-sm shadow-sm">
+          <div className="max-w-3xl mx-auto bg-amber-50 border border-amber-200 rounded-xl p-3.5 sm:p-4 flex items-center justify-between gap-3 text-amber-900 text-sm shadow-sm">
             <div className="flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />
               <span>{errorMsg}</span>
             </div>
             <button
               onClick={() => setErrorMsg(null)}
-              className="text-xs font-bold text-amber-800 hover:underline shrink-0"
+              className="text-xs font-bold text-amber-800 hover:underline shrink-0 p-1"
             >
               Dismiss
             </button>
           </div>
         )}
 
-        {/* View Switcher based on current flow state */}
-        {isProcessing ? (
-          <ProcessingView progress={progress} fileName={selectedFile?.name || 'Document.pdf'} />
-        ) : result ? (
-          <ResultsView result={result} onCompressAnother={handleReset} />
-        ) : selectedFile ? (
-          <CompressionControls
+        {/* View Switcher: Dropzone or Batch Queue */}
+        {queue.length > 0 ? (
+          <BatchQueueView
+            queue={queue}
             options={options}
             onChangeOptions={setOptions}
-            onStartCompress={handleStartCompress}
-            fileName={selectedFile.name}
-            fileSizeFormatted={formatBytes(selectedFile.size)}
-            pageCount={pageCount}
+            onAddMoreFiles={handleAddMoreFiles}
+            onRemoveFile={handleRemoveFile}
+            onStartBatchCompress={handleStartBatchCompress}
+            onReset={handleReset}
+            isProcessingBatch={isProcessingBatch}
           />
         ) : (
           <div className="space-y-10">

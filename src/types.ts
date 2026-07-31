@@ -1,10 +1,11 @@
 export type CompressionPreset = 'extreme' | 'recommended' | 'light' | 'custom';
+export type SupportedFileType = 'pdf' | 'image' | 'docx' | 'unknown';
 
 export interface CompressionOptions {
   preset: CompressionPreset;
-  quality: number; // 0.05 to 1.0 (e.g. 0.25 for extreme)
-  maxDimension: number; // Max canvas width/height in px (e.g., 800, 1200, 1600)
-  dpiScale: number; // 0.4 to 1.5
+  quality: number; // 0.05 to 1.0 (e.g. 0.15 for extreme)
+  maxDimension: number; // Max canvas width/height in px (e.g., 600, 900, 1200)
+  dpiScale: number;
   grayscale: boolean;
   removeMetadata: boolean;
   removeAnnotations: boolean;
@@ -21,21 +22,23 @@ export interface ProgressState {
 
 export interface CompressionResult {
   fileName: string;
+  fileType: SupportedFileType;
   originalSize: number; // bytes
   compressedSize: number; // bytes
   savedBytes: number;
   savedPercentage: number;
   blob: Blob;
   downloadUrl: string;
-  pageCount: number;
+  pageCount?: number;
   previewUrls: string[];
   compressionTimeMs: number;
 }
 
-export interface PDFFileItem {
+export interface BatchFileItem {
   id: string;
   file: File;
   name: string;
+  fileType: SupportedFileType;
   originalSize: number;
   pageCount?: number;
   status: 'idle' | 'processing' | 'done' | 'error';

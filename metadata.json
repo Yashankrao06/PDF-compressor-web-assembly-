@@ -1,6 +1,6 @@
 {
-  "name": "PDF Compressor",
-  "description": "Fast, 100% private client-side PDF compression tool. Shrink PDF file sizes directly in your browser without uploading files to any server.",
+  "name": "FileShrink AI",
+  "description": "Fast, 100% private client-side file compression tool for PDFs, images (JPG, PNG, WebP), and Word documents (.docx) with batch queueing.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

@@ -9,6 +9,8 @@ interface CompressionControlsProps {
   fileName: string;
   fileSizeFormatted: string;
   pageCount?: number;
+  isBatchMode?: boolean;
+  isProcessingBatch?: boolean;
 }
 
 export const CompressionControls: React.FC<CompressionControlsProps> = ({
@@ -18,6 +20,8 @@ export const CompressionControls: React.FC<CompressionControlsProps> = ({
   fileName,
   fileSizeFormatted,
   pageCount,
+  isBatchMode = false,
+  isProcessingBatch = false,
 }) => {
   const selectPreset = (preset: CompressionPreset) => {
     let quality = 0.42;
@@ -53,19 +57,19 @@ export const CompressionControls: React.FC<CompressionControlsProps> = ({
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto bg-white border border-stone-200 rounded-xl p-6 sm:p-8 shadow-xl text-stone-900">
+    <div className="w-full max-w-3xl mx-auto bg-white border border-stone-200 rounded-2xl p-4 sm:p-8 shadow-xl text-stone-900">
       {/* File Info Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-stone-200">
-        <div>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-5 sm:pb-6 border-b border-stone-200">
+        <div className="min-w-0">
           <span className="text-xs uppercase font-extrabold tracking-wider text-emerald-600">Selected Document</span>
-          <h3 className="text-lg font-bold text-stone-900 truncate max-w-md">{fileName}</h3>
+          <h3 className="text-base sm:text-lg font-bold text-stone-900 truncate max-w-xs sm:max-w-md">{fileName}</h3>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="px-3 py-1 rounded-lg bg-stone-100 border border-stone-200 text-xs font-mono font-bold text-stone-700">
+        <div className="flex items-center gap-2">
+          <div className="px-2.5 py-1 rounded-lg bg-stone-100 border border-stone-200 text-xs font-mono font-bold text-stone-700">
             Original: {fileSizeFormatted}
           </div>
           {pageCount && pageCount > 0 && (
-            <div className="px-3 py-1 rounded-lg bg-stone-100 border border-stone-200 text-xs font-mono font-bold text-stone-700">
+            <div className="px-2.5 py-1 rounded-lg bg-stone-100 border border-stone-200 text-xs font-mono font-bold text-stone-700">
               {pageCount} {pageCount === 1 ? 'Page' : 'Pages'}
             </div>
           )}
@@ -221,14 +225,21 @@ export const CompressionControls: React.FC<CompressionControlsProps> = ({
       )}
 
       {/* Start Button */}
-      <div className="mt-8">
+      <div className="mt-6 sm:mt-8">
         <button
           type="button"
           onClick={onStartCompress}
-          className="w-full py-4 px-6 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm uppercase tracking-wider transition-all shadow-md active:scale-[0.99] flex items-center justify-center gap-2"
+          disabled={isProcessingBatch}
+          className="w-full min-h-[48px] py-3.5 sm:py-4 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm uppercase tracking-wider transition-all shadow-md active:scale-[0.99] flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
         >
           <Zap className="w-5 h-5 fill-white" />
-          <span>Start Local WASM Compression</span>
+          <span>
+            {isProcessingBatch
+              ? 'Compressing Files...'
+              : isBatchMode
+              ? 'Compress All Files Now'
+              : 'Start AI Local Compression'}
+          </span>
         </button>
       </div>
     </div>
